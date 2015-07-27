@@ -25,8 +25,8 @@ namespace vm {
       PC = 0, SP, SR
     };
 
-    enum StatusBit {
-      Overflow = 8, Negative = 4, Zero =  2 , Carry = 1
+    enum StatusFlag {
+      OVERFLOW = 8, NEGATIVE = 4, ZERO =  2 , CARRY = 1
     };
 
     // 32 * 1024 * 2 bytes = 64 KB
@@ -43,22 +43,7 @@ namespace vm {
 
     uint16_t read_word(uint8_t, uint8_t, uint8_t);
     void write_word(uint16_t, uint8_t, uint8_t);
-    uint16_t *translate_to_ptr(uint8_t, uint8_t);
-
-    template<StatusBit bit>
-    void set_status() {
-      r[SR] |= (1 << bit);
-    }
-
-    template<StatusBit bit>
-    void rst_status() {
-      r[SR] &= ~(1 << bit);
-    }
-
-    template<StatusBit bit>
-    int test_bit() {
-      return r[SR] & (1 << bit);
-    }
+    uint16_t *resolve_to_ptr(uint8_t, uint8_t);
 
     // Unary Instructions
     DECLARE_U_INS(rrc);

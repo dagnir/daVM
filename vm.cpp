@@ -35,7 +35,7 @@ namespace vm {
   }
 
   uint16_t VM::read_word(uint8_t bw, uint8_t addr_mode, uint8_t reg) {
-    auto w = *translate_to_ptr(addr_mode, reg);
+    auto w = *resolve_to_ptr(addr_mode, reg);
     if (bw) {
       return w & 0x00ff;
     }
@@ -43,11 +43,11 @@ namespace vm {
   }
 
   void VM::write_word(uint16_t w, uint8_t addr_mode, uint8_t reg) {
-    auto pw = translate_to_ptr(addr_mode, reg);
+    auto pw = resolve_to_ptr(addr_mode, reg);
     *pw = w;
   }
 
-  uint16_t *VM::translate_to_ptr(uint8_t addr_mode, uint8_t reg) {
+  uint16_t *VM::resolve_to_ptr(uint8_t addr_mode, uint8_t reg) {
     switch (addr_mode) {
       // register direct
       // Rn
@@ -91,15 +91,15 @@ namespace vm {
   // sign bit should be preserved through rotate
   // i.e. if it's 1 before rotation, it must be 1 after
   DEF_U_INS(rra) {
-    rst_status<Negative>();
-    rst_status<Zero>();
-    rst_status<Carry>();
-    rst_status<Overflow>();
+    r[SR] &= ~(1 << OVERFLOW |
+	       1 << NEGATIVE |
+	       1 << ZERO     |
+	       1 << CARRY);
 
     uint16_t w = read_word(bw, As, s_reg);
 
     if (w & 0x1) {
-      set_status<Carry>();
+      r[SR] |= 1 << CARRY;
     }
 
     uint16_t msb;
@@ -115,10 +115,10 @@ namespace vm {
     w |= msb;
 
     if (!w) {
-      set_status<Zero>();
+      r[SR] |= 1 << ZERO;
     }
     if (msb) {
-      set_status<Negative>();
+      r[SR] |= 1 << NEGATIVE;
     }
 
     write_word(w, As, s_reg);
