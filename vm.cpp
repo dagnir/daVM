@@ -18,6 +18,7 @@ namespace vm {
     r[SP] = STACK_START;
 
     unaryInstructions = { {
+	U_INS(rrc),
 	U_INS(swpb),
 	U_INS(rra),
 	U_INS(sxt),
@@ -75,6 +76,35 @@ namespace vm {
       cerr << "Unknown addressing mode: " << (int)addr_mode << endl;
       exit(1);
     }
+  }
+
+  DEF_U_INS(rrc) {
+    r[SR] &= ~(1 << NEGATIVE |
+	       1 << ZERO     |
+	       1 << OVERFLOW);
+
+    auto w = read_word(bw, As, s_reg);
+    bool set_carry = w & 1;
+    w >>= 1;
+
+    if (r[SR] & (1 << CARRY)) {
+      if (bw) {
+	w |= 0x0080;
+      } else {
+	w |= 0x8000;
+      }
+      r[SR] |= 1 << NEGATIVE;
+    }
+
+    if (!w) {
+      r[SR] |= 1 << ZERO;
+    }
+
+    if (set_carry) {
+      r[SR] |= 1 << CARRY;
+    }
+
+    write_word(w, As, s_reg);
   }
 
   // Swap low and high byte.
