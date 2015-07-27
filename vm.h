@@ -26,7 +26,7 @@ namespace vm {
     };
 
     enum StatusFlag {
-      OVERFLOW = 8, NEGATIVE = 4, ZERO =  2 , CARRY = 1
+      OVERFLOW = 8, NEGATIVE = 2, ZERO =  1 , CARRY = 0
     };
 
     // 32 * 1024 * 2 bytes = 64 KB
