@@ -20,6 +20,7 @@ namespace vm {
     unaryInstructions = { {
 	U_INS(swpb),
 	U_INS(rra),
+	U_INS(sxt),
 	U_INS(push),
 	U_INS(call)
       } };
@@ -119,6 +120,34 @@ namespace vm {
     }
     if (msb) {
       r[SR] |= 1 << NEGATIVE;
+    }
+
+    write_word(w, As, s_reg);
+  }
+
+  DEF_U_INS(sxt) {
+    r[SR] &= ~(1 << OVERFLOW |
+	       1 << NEGATIVE |
+	       1 << ZERO     |
+	       1 << CARRY);
+
+    auto w = read_word(bw, As, s_reg);
+    auto sign = w & 0x0080;
+
+    if (sign) {
+      w |= 0xff00;
+    } else {
+      w &= 0x00ff;
+    }
+
+    if (sign) {
+      r[SR] |= 1 << NEGATIVE;
+    }
+
+    if (!w) {
+      r[SR] = 1 << ZERO;
+    } else {
+      r[SR] = 1 << CARRY;
     }
 
     write_word(w, As, s_reg);

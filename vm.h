@@ -49,6 +49,7 @@ namespace vm {
     DECLARE_U_INS(rrc);
     DECLARE_U_INS(swpb);
     DECLARE_U_INS(rra);
+    DECLARE_U_INS(sxt);
     DECLARE_U_INS(push);
     DECLARE_U_INS(call);
   };
