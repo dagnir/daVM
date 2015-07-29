@@ -1,4 +1,7 @@
 /* -*- mode: c++ -*- */
+#ifndef __GUARD_VM_H__
+#define __GUARD_VM_H__
+
 #include <array>
 #include <functional>
 #include <cstdint>
@@ -71,3 +74,4 @@ namespace vm {
     DECLARE_U_INS(call);
   };
 } // namespace vm
+#endif // __GUARD_VM_H__
