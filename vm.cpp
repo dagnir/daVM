@@ -4,7 +4,7 @@
 #include "vm.h"
 
 #define U_INS(name) bind(&VM::ins_##name, this, _1, _2, _3)
-#define B_INS(name) ind(&VM::ins_##name, this, _1, _2, _3, _4, _5)
+#define B_INS(name) bind(&VM::ins_##name, this, _1, _2, _3, _4, _5)
 
 #define DEF_U_INS(name) void VM::ins_##name(uint8_t bw, uint8_t As, uint8_t s_reg)
 #define DEF_B_INS(name) void VM::ins_##name(uint8_t bw, uint8_t As, uint8_t s_reg, uint8_t Ad, uint8_t d_reg)
