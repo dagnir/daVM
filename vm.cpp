@@ -31,45 +31,86 @@ namespace vm {
   }
 
   uint16_t VM::fetch() {
-    uint16_t ret = memory[r[PC]];
-    r[PC]++;
+    uint16_t ret = make_word(memory[r[PC]], memory[r[PC] + 1]);
+    r[PC] += 2;
     return ret;
   }
 
   uint16_t VM::read_word(uint8_t bw, uint8_t addr_mode, uint8_t reg) {
-    auto w = *resolve_to_ptr(addr_mode, reg);
+    auto w = read(addr_mode, reg);
     if (bw) {
-      return w & 0x00ff;
+      w &= 0x00ff;
     }
     return w;
   }
 
   void VM::write_word(uint16_t w, uint8_t addr_mode, uint8_t reg) {
-    auto pw = resolve_to_ptr(addr_mode, reg);
-    *pw = w;
+    switch (addr_mode) {
+      // register direct
+      // Rn
+    case 1:
+      r[reg] = w;
+      break;
+      // register indirect
+      // offset(Rn)
+    case 2: {
+      uint16_t ext = fetch();
+      memory[ext + r[reg]] = w & 0xff;
+      memory[ext + r[reg] + 1] = (w & 0xff00) >> 8;
+      break;
+    }
+    default:
+      std::cerr << "Unknown addressing mode: " << (int)addr_mode << std::endl;
+      exit(1);
+    }
   }
 
-  uint16_t *VM::resolve_to_ptr(uint8_t addr_mode, uint8_t reg) {
+  uint16_t VM::read(uint8_t addr_mode, uint8_t reg) {
     switch (addr_mode) {
       // register direct
       // Rn
     case 0:
-      return &r[reg];
+      if (reg == 3) {
+	return 0;
+      }
+      return r[reg];
       // register index
       // offset(Rn)
     case 1: {
+      if (reg == 3) {
+	return 1;
+      }
       uint16_t ext = fetch();
-      return &memory[r[reg] + ext];
+      if (reg == 2) {
+	return make_word(memory[ext], memory[ext + 1]);
+      }
+      return make_word(memory[ext + r[reg]], memory[ext + r[reg] + 1]);
     }
       // register indirect
       // @Rn
     case 2:
-      return &memory[r[reg]];
+      if (reg == 3) {
+	return 2;
+      }
+      if (reg == 2) {
+	return 4;
+      }
+      return make_word(memory[r[reg]], memory[r[reg] + 1]);
       // register indirect with post increment
       // @Rn+
     case 3: {
-      uint16_t *ret = &memory[r[reg]];
-      r[reg]++;
+      if (reg == 3) {
+	return 0xffff;
+      }
+      if (reg == 2) {
+	return 8;
+      }
+      uint16_t ret = make_word(memory[r[reg]], memory[r[reg] + 1]);
+      if (reg == PC) {
+	r[reg] += 2;
+      } else {
+	r[reg] += 1;
+      }
       return ret;
     }
     default:
@@ -186,16 +227,18 @@ namespace vm {
   // push a word on to the stack (even for push.b)
   DEF_U_INS(push) {
     auto w = read_word(bw, As, s_reg);
-    r[SP]--;
-    memory[r[SP]] = w;
+    if (bw) {
+      stack_push((uint8_t)(0xff & w));
+    } else {
+      stack_push(w);
+    }
   }
 
   // PUSH PC, then jump.
   // no .b variant
   DEF_U_INS(call) {
     auto w = read_word(0, As, s_reg);
-    r[SP]--;
-    memory[r[SP]] = r[PC];
+    stack_push(r[PC]);
     r[PC] = w;
   }
 

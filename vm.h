@@ -29,8 +29,9 @@ namespace vm {
       OVERFLOW = 8, NEGATIVE = 2, ZERO =  1 , CARRY = 0
     };
 
-    // 32 * 1024 * 2 bytes = 64 KB
-    array<uint16_t, 32 * 1024> memory;
+
+    // 64 KB
+    array<uint8_t, 64 * 1024> memory;
     uint16_t r[16];
 
     array<UnaryInstruction, 8> unaryInstructions;
@@ -42,8 +43,24 @@ namespace vm {
     void execute_binary_ins(uint16_t);
 
     uint16_t read_word(uint8_t, uint8_t, uint8_t);
+    uint16_t read(uint8_t, uint8_t);
     void write_word(uint16_t, uint8_t, uint8_t);
-    uint16_t *resolve_to_ptr(uint8_t, uint8_t);
+
+    uint16_t make_word(uint8_t l, uint8_t h) {
+      return (uint16_t)(h << 8) | l;
+    }
+
+    void stack_push(uint8_t byte) {
+      r[SP] -= 2;
+      // high byte is garbage
+      memory[r[SP]] = byte;
+    }
+
+    void stack_push(uint16_t word) {
+      r[SP] -= 2;
+      memory[r[SP]] = word & 0xff;
+      memory[r[SP] + 1] = (word & 0xff00) >> 8;
+    }
 
     // Unary Instructions
     DECLARE_U_INS(rrc);
