@@ -51,12 +51,12 @@ namespace vm {
     switch (addr_mode) {
       // register direct
       // Rn
-    case 1:
+    case 0:
       r[reg] = w;
       break;
       // register indirect
       // offset(Rn)
-    case 2: {
+    case 1: {
       uint16_t ext = fetch();
       memory[ext + r[reg]] = w & 0xff;
       memory[ext + r[reg] + 1] = (w & 0xff00) >> 8;
