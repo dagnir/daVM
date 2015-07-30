@@ -28,8 +28,9 @@ namespace vm {
 	U_INS(call)
       } };
 
-    binaryInstructions = {
-    };
+    binaryInstructions = { {
+	B_INS(mov)
+      } };
   }
 
   uint16_t VM::fetch() {
@@ -244,6 +245,11 @@ namespace vm {
     auto w = read_word(0, As, s_reg);
     stack_push(r[PC]);
     r[PC] = w;
+  }
+
+  DEF_B_INS(mov) {
+    auto w = read_word(bw, As, s_reg);
+    write_word(w, Ad, d_reg);
   }
 
 } // namespace vm

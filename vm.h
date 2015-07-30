@@ -72,6 +72,10 @@ namespace vm {
     DECLARE_U_INS(sxt);
     DECLARE_U_INS(push);
     DECLARE_U_INS(call);
+
+    // Dual operand instructions
+    DECLARE_B_INS(mov);
+
   };
 } // namespace vm
 #endif // __GUARD_VM_H__
