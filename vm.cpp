@@ -39,6 +39,21 @@ namespace vm {
     return ret;
   }
 
+  void VM::execute_binary_ins(uint16_t ins) {
+    uint8_t dst_reg = ins & 0xf;
+    ins >>= 4;
+    uint8_t As = ins & 0x3;
+    ins >>= 2;
+    uint8_t bw = ins & 0x1;
+    ins >>= 1;
+    uint8_t Ad = ins & 0x1;
+    ins >>= 1;
+    uint8_t src_reg = ins & 0xf;
+    ins >>= 4;
+    uint8_t opcode = (uint8_t)ins;
+    binaryInstructions[opcode - 4](bw, As, src_reg, Ad, dst_reg);
+  }
+
   uint16_t VM::read_word(uint8_t bw, uint8_t addr_mode, uint8_t reg) {
     auto w = read(addr_mode, reg);
     if (bw) {
