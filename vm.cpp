@@ -9,6 +9,8 @@
 #define DEF_U_INS(name) void VM::ins_##name(uint8_t bw, uint8_t As, uint8_t s_reg)
 #define DEF_B_INS(name) void VM::ins_##name(uint8_t bw, uint8_t As, uint8_t s_reg, uint8_t Ad, uint8_t d_reg)
 
+#define UNUSED(x) (void)(x)
+
 namespace vm {
   using namespace std;
   using namespace std::placeholders;
@@ -151,6 +153,8 @@ namespace vm {
   // Swap low and high byte.
   // No .b variant.
   DEF_U_INS(swpb) {
+    UNUSED(bw);
+
     uint16_t w = read_word(0, As, s_reg);
     uint16_t temp = w & 0xFF;
     w >>= 8;
