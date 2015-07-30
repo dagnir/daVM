@@ -257,6 +257,8 @@ namespace vm {
   // PUSH PC, then jump.
   // no .b variant
   DEF_U_INS(call) {
+    UNUSED(bw);
+
     auto w = read_word(0, As, s_reg);
     stack_push(r[PC]);
     r[PC] = w;
