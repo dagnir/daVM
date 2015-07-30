@@ -221,9 +221,9 @@ namespace vm {
     }
 
     if (!w) {
-      r[SR] = 1 << ZERO;
+      r[SR] |= 1 << ZERO;
     } else {
-      r[SR] = 1 << CARRY;
+      r[SR] |= 1 << CARRY;
     }
 
     write_word(w, As, s_reg);
