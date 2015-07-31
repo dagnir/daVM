@@ -75,7 +75,9 @@ namespace vm {
 
     // Dual operand instructions
     DECLARE_B_INS(mov);
+    DECLARE_B_INS(add);
 
+    void add_common(uint8_t, uint8_t, uint8_t, uint8_t, uint8_t, uint8_t);
   };
 } // namespace vm
 #endif // __GUARD_VM_H__

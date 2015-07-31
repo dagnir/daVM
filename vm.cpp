@@ -29,7 +29,8 @@ namespace vm {
       } };
 
     binaryInstructions = { {
-	B_INS(mov)
+	B_INS(mov),
+	B_INS(add)
       } };
   }
 
@@ -267,6 +268,48 @@ namespace vm {
   DEF_B_INS(mov) {
     auto w = read_word(bw, As, s_reg);
     write_word(w, Ad, d_reg);
+  }
+
+  DEF_B_INS(add) {
+    add_common(bw, As, s_reg, Ad, d_reg, 0);
+  }
+
+  inline void VM::add_common(uint8_t bw, uint8_t As, uint8_t s_reg, uint8_t Ad,
+			     uint8_t d_reg, uint8_t carry) {
+    auto src = read_word(bw, As, s_reg);
+    auto dst = read_word(0, Ad, d_reg);
+    const unsigned res = src + dst + carry;
+    uint16_t sign_mask = bw ? 0x0080 : 0x8000;
+    bool src_neg = src & sign_mask;
+    bool dst_neg = dst & (1 << 15);
+    bool same_sign = src_neg == dst_neg;
+    bool sign_flipped = (res ^ dst) & (1 << 15);
+
+    if (same_sign && sign_flipped) {
+      r[SR] |= (1 << OVERFLOW);
+    } else {
+      r[SR] &= ~(1 << OVERFLOW);
+    }
+
+    if (res & (1 << 15)) {
+      r[SR] |= (1 << NEGATIVE);
+    } else {
+      r[SR] &= ~(1 << NEGATIVE);
+    }
+
+    if (!res) {
+      r[SR] |= (1 << ZERO);
+    } else {
+      r[SR] &= ~(1 << ZERO);
+    }
+
+    if (res & (1 << 16)) {
+      r[SR] |= (1 << CARRY);
+    } else {
+      r[SR] &= ~(1 << CARRY);
+    }
+
+    write_word((uint16_t)res, Ad, d_reg);
   }
 
 } // namespace vm
