@@ -30,7 +30,8 @@ namespace vm {
 
     binaryInstructions = { {
 	B_INS(mov),
-	B_INS(add)
+	B_INS(add),
+	B_INS(addc)
       } };
   }
 
@@ -277,6 +278,14 @@ namespace vm {
 
   DEF_B_INS(add) {
     add_common(bw, As, s_reg, Ad, d_reg, 0);
+  }
+
+  DEF_B_INS(addc) {
+    if (r[SR] & (1 << CARRY)) {
+      add_common(bw, As, s_reg, Ad, d_reg, 1);
+    } else {
+      add_common(bw, As, s_reg, Ad, d_reg, 0);
+    }
   }
 
   inline void VM::add_common(uint8_t bw, uint8_t As, uint8_t s_reg, uint8_t Ad,
