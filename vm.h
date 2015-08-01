@@ -45,9 +45,9 @@ namespace vm {
     void execute_conditional_ins(uint16_t);
     void execute_binary_ins(uint16_t);
 
-    uint16_t read_word(uint8_t, uint8_t, uint8_t);
+    uint16_t read_data(uint8_t, uint8_t, uint8_t);
     uint16_t read(uint8_t, uint8_t);
-    void write_word(uint16_t, uint8_t, uint8_t);
+    void write_data(uint8_t, uint16_t, uint8_t, uint8_t);
 
     uint16_t make_word(uint8_t l, uint8_t h) {
       return (uint16_t)(h << 8) | l;

@@ -55,7 +55,7 @@ namespace vm {
     binaryInstructions[opcode - 4](bw, As, src_reg, Ad, dst_reg);
   }
 
-  uint16_t VM::read_word(uint8_t bw, uint8_t addr_mode, uint8_t reg) {
+  uint16_t VM::read_data(uint8_t bw, uint8_t addr_mode, uint8_t reg) {
     auto w = read(addr_mode, reg);
     if (bw) {
       w &= 0x00ff;
@@ -63,19 +63,24 @@ namespace vm {
     return w;
   }
 
-  void VM::write_word(uint16_t w, uint8_t addr_mode, uint8_t reg) {
+  void VM::write_data(uint8_t bw, uint16_t w, uint8_t addr_mode, uint8_t reg) {
     switch (addr_mode) {
       // register direct
       // Rn
     case 0:
       r[reg] = w;
+      if (bw) {
+	r[reg] &= 0x00ff;
+      }
       break;
       // register indirect
       // offset(Rn)
     case 1: {
       uint16_t ext = fetch();
       memory[ext + r[reg]] = w & 0xff;
-      memory[ext + r[reg] + 1] = (w & 0xff00) >> 8;
+      if (!bw) {
+	memory[ext + r[reg] + 1] = (w & 0xff00) >> 8;
+      }
       break;
     }
     default:
@@ -143,7 +148,7 @@ namespace vm {
 	       1 << ZERO     |
 	       1 << OVERFLOW);
 
-    auto w = read_word(bw, As, s_reg);
+    auto w = read_data(bw, As, s_reg);
     bool set_carry = w & 1;
     w >>= 1;
 
@@ -164,7 +169,7 @@ namespace vm {
       r[SR] |= 1 << CARRY;
     }
 
-    write_word(w, As, s_reg);
+    write_data(bw, w, As, s_reg);
   }
 
   // Swap low and high byte.
@@ -172,11 +177,11 @@ namespace vm {
   DEF_U_INS(swpb) {
     UNUSED(bw);
 
-    uint16_t w = read_word(0, As, s_reg);
+    uint16_t w = read_data(0, As, s_reg);
     uint16_t temp = w & 0xFF;
     w >>= 8;
     w |= temp << 8;
-    write_word(w, As, s_reg);
+    write_data(bw, w, As, s_reg);
   }
 
   // Rotate right arithmetic
@@ -189,7 +194,7 @@ namespace vm {
 	       1 << ZERO     |
 	       1 << CARRY);
 
-    uint16_t w = read_word(bw, As, s_reg);
+    uint16_t w = read_data(bw, As, s_reg);
 
     if (w & 0x1) {
       r[SR] |= 1 << CARRY;
@@ -214,7 +219,7 @@ namespace vm {
       r[SR] |= 1 << NEGATIVE;
     }
 
-    write_word(w, As, s_reg);
+    write_data(bw, w, As, s_reg);
   }
 
   DEF_U_INS(sxt) {
@@ -223,7 +228,7 @@ namespace vm {
 	       1 << ZERO     |
 	       1 << CARRY);
 
-    auto w = read_word(bw, As, s_reg);
+    auto w = read_data(bw, As, s_reg);
     auto sign = w & 0x0080;
 
     if (sign) {
@@ -242,12 +247,12 @@ namespace vm {
       r[SR] |= 1 << CARRY;
     }
 
-    write_word(w, As, s_reg);
+    write_data(bw, w, As, s_reg);
   }
 
   // push a word on to the stack (even for push.b)
   DEF_U_INS(push) {
-    auto w = read_word(bw, As, s_reg);
+    auto w = read_data(bw, As, s_reg);
     if (bw) {
       stack_push((uint8_t)(0xff & w));
     } else {
@@ -260,14 +265,14 @@ namespace vm {
   DEF_U_INS(call) {
     UNUSED(bw);
 
-    auto w = read_word(0, As, s_reg);
+    auto w = read_data(0, As, s_reg);
     stack_push(r[PC]);
     r[PC] = w;
   }
 
   DEF_B_INS(mov) {
-    auto w = read_word(bw, As, s_reg);
-    write_word(w, Ad, d_reg);
+    auto w = read_data(bw, As, s_reg);
+    write_data(bw, w, Ad, d_reg);
   }
 
   DEF_B_INS(add) {
@@ -276,14 +281,12 @@ namespace vm {
 
   inline void VM::add_common(uint8_t bw, uint8_t As, uint8_t s_reg, uint8_t Ad,
 			     uint8_t d_reg, uint8_t carry) {
-    auto src = read_word(bw, As, s_reg);
-    auto dst = read_word(0, Ad, d_reg);
+    auto src = read_data(bw, As, s_reg);
+    auto dst = read_data(bw, Ad, d_reg);
     const unsigned res = src + dst + carry;
-    uint16_t sign_mask = bw ? 0x0080 : 0x8000;
-    bool src_neg = src & sign_mask;
-    bool dst_neg = dst & (1 << 15);
-    bool same_sign = src_neg == dst_neg;
-    bool sign_flipped = (res ^ dst) & (1 << 15);
+    uint16_t sign_mask = bw ? (1 << 7) : (1 << 15);
+    bool same_sign = (src & sign_mask) == (dst & sign_mask);
+    bool sign_flipped = (res ^ dst) & sign_mask;
 
     if (same_sign && sign_flipped) {
       r[SR] |= (1 << OVERFLOW);
@@ -303,13 +306,14 @@ namespace vm {
       r[SR] &= ~(1 << ZERO);
     }
 
-    if (res & (1 << 16)) {
+    if ((!bw && (res & (1 << 16))) ||
+	(bw && (res & (1 << 8)))) {
       r[SR] |= (1 << CARRY);
     } else {
       r[SR] &= ~(1 << CARRY);
     }
 
-    write_word((uint16_t)res, Ad, d_reg);
+    write_data(bw, (uint16_t)res, Ad, d_reg);
   }
 
 } // namespace vm
