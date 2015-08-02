@@ -31,7 +31,8 @@ namespace vm {
     binaryInstructions = { {
 	B_INS(mov),
 	B_INS(add),
-	B_INS(addc)
+	B_INS(addc),
+	B_INS(cmp)
       } };
   }
 
@@ -277,21 +278,30 @@ namespace vm {
   }
 
   DEF_B_INS(add) {
-    add_common(bw, As, s_reg, Ad, d_reg, 0);
+    auto src = read_data(bw, As, s_reg);
+    auto dst = read_data(bw, Ad, d_reg);
+    auto res = add_common(bw, src, dst, 0);
+    write_data(bw, res, Ad, d_reg);
   }
 
   DEF_B_INS(addc) {
-    if (r[SR] & (1 << CARRY)) {
-      add_common(bw, As, s_reg, Ad, d_reg, 1);
-    } else {
-      add_common(bw, As, s_reg, Ad, d_reg, 0);
-    }
-  }
-
-  inline void VM::add_common(uint8_t bw, uint8_t As, uint8_t s_reg, uint8_t Ad,
-			     uint8_t d_reg, uint8_t carry) {
     auto src = read_data(bw, As, s_reg);
     auto dst = read_data(bw, Ad, d_reg);
+    uint8_t carry_bit = (r[SR] & (1 << CARRY)) ? 1 : 0;
+    auto res = add_common(bw, src, dst, carry_bit);
+    write_data(bw, res, Ad, d_reg);
+  }
+
+  DEF_B_INS(cmp) {
+    uint16_t src = (uint16_t)~read_data(bw, As, s_reg);
+    if (bw) {
+      src &= 0x00ff;
+    }
+    auto dst = read_data(bw, Ad, d_reg);
+    (void)add_common(bw, src, dst, 1);
+  }
+
+  inline uint16_t VM::add_common(uint8_t bw, uint16_t src, uint16_t dst, uint8_t carry) {
     const unsigned res = src + dst + carry;
     uint16_t sign_mask = bw ? (1 << 7) : (1 << 15);
     bool same_sign = (src & sign_mask) == (dst & sign_mask);
@@ -322,7 +332,7 @@ namespace vm {
       r[SR] &= ~(1 << CARRY);
     }
 
-    write_data(bw, (uint16_t)res, Ad, d_reg);
+    return (uint16_t)res;
   }
 
 } // namespace vm
