@@ -59,6 +59,17 @@ namespace vm {
     binaryInstructions[opcode - 4](bw, As, src_reg, Ad, dst_reg);
   }
 
+  void VM::execute_unary_ins(uint16_t ins) {
+    uint8_t reg = ins & 0xf;
+    ins >>= 4;
+    uint8_t As = ins & 0x3;
+    ins >>= 2;
+    uint8_t bw = ins & 0x1;
+    ins >>= 1;
+    uint8_t opcode = ins & 0x7;
+    unaryInstructions[opcode](bw, As, reg);
+  }
+
   uint16_t VM::read_data(uint8_t bw, uint8_t addr_mode, uint8_t reg) {
     auto w = read(addr_mode, reg);
     if (bw) {
