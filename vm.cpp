@@ -32,6 +32,8 @@ namespace vm {
 	B_INS(mov),
 	B_INS(add),
 	B_INS(addc),
+	B_INS(subc),
+	B_INS(sub),
 	B_INS(cmp)
       } };
   }
@@ -286,6 +288,21 @@ namespace vm {
 
   DEF_B_INS(addc) {
     auto src = read_data(bw, As, s_reg);
+    auto dst = read_data(bw, Ad, d_reg);
+    uint8_t carry_bit = (r[SR] & (1 << CARRY)) ? 1 : 0;
+    auto res = add_common(bw, src, dst, carry_bit);
+    write_data(bw, res, Ad, d_reg);
+  }
+
+  DEF_B_INS(sub) {
+    uint16_t src = (uint16_t)~read_data(bw, As, s_reg);
+    auto dst = read_data(bw, Ad, d_reg);
+    auto res = add_common(bw, src, dst, 1);
+    write_data(bw, res, Ad, d_reg);
+  }
+
+  DEF_B_INS(subc) {
+    uint16_t src = (uint16_t)~read_data(bw, As, s_reg);
     auto dst = read_data(bw, Ad, d_reg);
     uint8_t carry_bit = (r[SR] & (1 << CARRY)) ? 1 : 0;
     auto res = add_common(bw, src, dst, carry_bit);

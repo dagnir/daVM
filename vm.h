@@ -77,6 +77,8 @@ namespace vm {
     DECLARE_B_INS(mov);
     DECLARE_B_INS(add);
     DECLARE_B_INS(addc);
+    DECLARE_B_INS(subc);
+    DECLARE_B_INS(sub);
     DECLARE_B_INS(cmp);
 
     uint16_t add_common(uint8_t, uint16_t, uint16_t, uint8_t);
