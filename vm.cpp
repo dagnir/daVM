@@ -341,7 +341,7 @@ namespace vm {
       r[SR] &= ~(1 << OVERFLOW);
     }
 
-    if (res & (1 << 15)) {
+    if (res & sign_mask) {
       r[SR] |= (1 << NEGATIVE);
     } else {
       r[SR] &= ~(1 << NEGATIVE);
