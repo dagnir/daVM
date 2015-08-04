@@ -38,6 +38,10 @@ namespace vm {
       } };
   }
 
+  uint16_t VM::query_register(unsigned reg) {
+    return r[reg];
+  }
+
   uint16_t VM::fetch() {
     uint16_t ret = make_word(memory[r[PC]], memory[r[PC] + 1]);
     r[PC] += 2;

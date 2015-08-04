@@ -15,7 +15,10 @@ namespace vm {
   class VM {
   public:
     VM();
+
     void load(unsigned char*, size_t);
+
+    uint16_t query_register(unsigned);
 
   private:
     const uint16_t CODE_START = 0x8000;
