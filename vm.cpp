@@ -55,6 +55,28 @@ namespace vm {
     memory[addr + 1] = (w & 0xff00) >> 8;
   }
 
+  void VM::stack_push(uint8_t byte) {
+    r[SP] -= 2;
+    // high byte is garbage
+    memory[r[SP]] = byte;
+  }
+
+  void VM::stack_push(uint16_t word) {
+    r[SP] -= 2;
+    memory[r[SP]] = word & 0xff;
+    memory[r[SP] + 1] = (word & 0xff00) >> 8;
+  }
+
+  uint16_t VM::stack_pop_word() {
+    unsigned w = (memory[r[SP] + 1] << 8) | memory[r[SP]];
+    r[SP] += 2;
+    return (uint16_t)w;
+  }
+
+  uint8_t VM::stack_pop_byte() {
+    return stack_pop_word() & 0x00ff;
+  }
+
   uint16_t VM::fetch() {
     uint16_t ret = make_word(memory[r[PC]], memory[r[PC] + 1]);
     r[PC] += 2;

@@ -26,6 +26,14 @@ namespace vm {
 
     void mem_write(uint16_t, uint16_t);
 
+    void stack_push(uint8_t);
+
+    void stack_push(uint16_t);
+
+    uint16_t stack_pop_word();
+
+    uint8_t stack_pop_byte();
+
   private:
     const uint16_t CODE_START = 0x8000;
     const uint16_t STACK_START = 0x5FF;
@@ -62,17 +70,6 @@ namespace vm {
       return (uint16_t)(h << 8) | l;
     }
 
-    void stack_push(uint8_t byte) {
-      r[SP] -= 2;
-      // high byte is garbage
-      memory[r[SP]] = byte;
-    }
-
-    void stack_push(uint16_t word) {
-      r[SP] -= 2;
-      memory[r[SP]] = word & 0xff;
-      memory[r[SP] + 1] = (word & 0xff00) >> 8;
-    }
 
     // Unary Instructions
     DECLARE_U_INS(rrc);
