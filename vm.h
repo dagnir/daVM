@@ -1,7 +1,5 @@
 /* -*- mode: c++ -*- */
-#ifndef __GUARD_VM_H__
-#define __GUARD_VM_H__
-
+#pragma once
 #include <array>
 #include <functional>
 #include <cstdint>
@@ -90,4 +88,3 @@ namespace vm {
     uint16_t add_common(uint8_t, uint16_t, uint16_t, uint8_t);
   };
 } // namespace vm
-#endif // __GUARD_VM_H__
