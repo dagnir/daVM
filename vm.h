@@ -4,9 +4,6 @@
 #include <functional>
 #include <cstdint>
 
-#define DECLARE_U_INS(name) void ins_##name(uint8_t, uint8_t, uint8_t)
-#define DECLARE_B_INS(name) void ins_##name(uint8_t, uint8_t, uint8_t, uint8_t, uint8_t)
-
 namespace vm {
   using namespace std;
 
@@ -68,6 +65,8 @@ namespace vm {
       return (uint16_t)(h << 8) | l;
     }
 
+#define DECLARE_U_INS(name) void ins_##name(uint8_t, uint8_t, uint8_t)
+#define DECLARE_B_INS(name) void ins_##name(uint8_t, uint8_t, uint8_t, uint8_t, uint8_t)
 
     // Unary Instructions
     DECLARE_U_INS(rrc);
@@ -84,6 +83,9 @@ namespace vm {
     DECLARE_B_INS(subc);
     DECLARE_B_INS(sub);
     DECLARE_B_INS(cmp);
+
+#undef DECLARE_U_INS
+#undef DECLARE_B_INS
 
     uint16_t add_common(uint8_t, uint16_t, uint16_t, uint8_t);
   };
