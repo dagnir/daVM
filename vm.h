@@ -20,6 +20,12 @@ namespace vm {
 
     uint16_t query_register(unsigned);
 
+    uint8_t mem_read(uint16_t);
+
+    void mem_write(uint16_t, uint8_t);
+
+    void mem_write(uint16_t, uint16_t);
+
   private:
     const uint16_t CODE_START = 0x8000;
     const uint16_t STACK_START = 0x5FF;

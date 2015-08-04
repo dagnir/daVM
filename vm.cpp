@@ -42,6 +42,19 @@ namespace vm {
     return r[reg];
   }
 
+  uint8_t VM::mem_read(uint16_t addr) {
+    return memory[addr];
+  }
+
+  void VM::mem_write(uint16_t addr, uint8_t b) {
+    memory[addr] = b;
+  }
+
+  void VM::mem_write(uint16_t addr, uint16_t w) {
+    memory[addr] = w & 0x00ff;
+    memory[addr + 1] = (w & 0xff00) >> 8;
+  }
+
   uint16_t VM::fetch() {
     uint16_t ret = make_word(memory[r[PC]], memory[r[PC] + 1]);
     r[PC] += 2;
