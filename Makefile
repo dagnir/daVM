@@ -9,4 +9,4 @@ all:
 	$(CC) $(OPTS) $(WARNINGS) main.cpp vm.cpp -o davm
 
 clean:
-	rm -rfv davm
+	rm -v davm
